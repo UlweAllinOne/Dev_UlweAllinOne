@@ -128,6 +128,14 @@ function displayCardDetails(){
 	mainTotal();
 }
 
+function checkQty(obj){
+	if($(obj).val() != ""){
+	if(! ($(obj).val() > 0 && $(obj).val() < 10)){
+		$(obj).val('1')
+	}
+	}
+}
+
 function generateProduct(){
 	
 	$.map(map, function(value,key){
@@ -138,7 +146,7 @@ function generateProduct(){
 	}
 	var outOfStock
 	if(valuesDetails[5] == "Y" ){
-		outOfStock='<br><span> Quantity <input type="number" value="1" min="1" max="9" size="4" style="margin-bottom: 6px;text-align: center;"></span><input type="button" onClick="return addtoCard('+key+',this)" class="btn btn-primary" value="Add to Cart">';
+		outOfStock='<br><span> Quantity <input type="number" value="1" min="1" max="9" onKeyup="return checkQty(this)" size="4" style="margin-bottom: 6px;text-align: center;"></span><input type="button" onClick="return addtoCard('+key+',this)" class="btn btn-primary" value="Add to Cart">';
 	}else{
 		outOfStock='<span class="btn btn-danger">Out of Stock</span>';
 	}
