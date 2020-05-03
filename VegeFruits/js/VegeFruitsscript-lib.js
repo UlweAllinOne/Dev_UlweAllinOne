@@ -2,6 +2,8 @@ var map = {};
 var deliveryCharge=0;
 var disc=0;
 var context = "https://m8gohcb5gc.execute-api.ap-south-1.amazonaws.com/dev/veg/";
+var contextCommon = "https://m8gohcb5gc.execute-api.ap-south-1.amazonaws.com/dev/common/";
+
 cardCount();
 function initMap(type){
 	$('#lodaingModal').modal('show');
@@ -19,7 +21,6 @@ function initMap(type){
 							
 						}
 						localStorage.setItem("vegmymap",JSON.stringify(map))	;
-						
 						setTimeout(hidePopup, 500);
 					},
 			  error : function (response) { 						
@@ -32,6 +33,7 @@ function initMap(type){
 		
 }
 
+
 function hidePopup(){
 	$('#lodaingModal').modal('hide');
 }
@@ -42,7 +44,7 @@ function cardCount(){
 	var iteams  = localStorage.getItem("vegcard");
 	if(iteams != null){
 		$.each(iteams.split(','),function(i,j){
-			if(j != "null" && j != ""){
+			if(j != "null" && j != "" && j.split("#")[0] != ""){
 				count++;
 			}
 		});
@@ -50,8 +52,9 @@ function cardCount(){
 	$(".cardCount").html("["+count+"]");
 }
 
-function addtoCard(id){
-	localStorage.setItem("vegcard",localStorage.getItem("vegcard")+","+id);
+function addtoCard(id,obj){
+	var cardId = id +"#"+ $(obj).parent().parent().find('input').eq(0).val()
+	localStorage.setItem("vegcard",localStorage.getItem("vegcard")+","+cardId);
 	alert(map[id].split(",")[0]+ " successfully added to cart.");
 	cardCount();
 	return false;
@@ -106,11 +109,20 @@ function initCart(){
 function displayCardDetails(){
 	
 	var iteams  = localStorage.getItem("vegcard");
-	$.each(iteams.split(','),function(i,j){
-	if(j != "null" && j != ""){
+	$.each(iteams.split(','),function(i,p){
+	if(p != "null" && p != ""){
+		var k=p.split("#")[1];
+		if(k == undefined){
+			k=1;
+		}
+		var j=p.split("#")[0];
+		if(j != ""){
 		var value = map[j].split(',');
-		var str = '<tr class="text-center" id="sectiondetails'+i+'"><td class="product-remove"><a href="#" onclick="return removeProduct('+j+','+i+')"><span class="ion-ios-close"></span></a></td><td class="image-prod"><div class="img" style="background-image:url(images/product-'+j+'.jpg);"></div></td><td class="product-name"><h3>'+value[0]+'</h3><p>'+value[4]+'</p></td><td class="price">'+value[2]+' Rs</td><td class="quantity"><div class="input-group mb-3"><input type="text" name="quantity'+i+'"  onkeyup="return calcuateAmt(this,'+i+','+value[2]+','+j+')" onchange="return calcuateAmt(this,'+i+','+value[2]+','+j+')" class="quantity form-control input-number" value="1" maxlength="1"></div></td><td id="totVal'+i+'" data-val="'+j+',1" class="total">'+value[2]+' Rs</td></tr>';
-		$("#cardDetails").append(str);
+		var finalPrice = value[2] * k;
+		var clickFn = "return removeProduct('"+p+"',"+i+")";
+		var str = '<div class="col-md-6 col-lg-3 ftco-animate fadeInUp ftco-animated" id="sectiondetails'+i+'"><div class="product"><a href="#" style="text-align: center" class="img-prod"><img class="img-fluid" src="images/product-'+j+'.jpg" alt="Colorlib Template"><div class="overlay"></div></a><div class="text py-3 pb-4 px-3 text-center"><h3><a href="#">'+value[0]+'</a></h3><div class="pricing123"><p class="price"><span class="price-sale">Price - '+value[2]+' Rs</span><br><span class="price-sale">&nbsp;&nbsp;Quantity - '+k+'</span><br><span class="price-sale">&nbsp;&nbsp;Final Price - '+finalPrice+' Rs</span><br><span class="price-sale">&nbsp;&nbsp;<input type="button" value="Remove from cart" onclick="'+clickFn +'" class="btn btn-primary"  ></span><span class="total" style="display:none" data-val="'+j+','+k+'" id="totVal'+i+'">'+finalPrice+' Rs</span></p></div></div></div></div>';
+		$("#cardDetailsData").append(str);
+		}
 	}
 	});
 	mainTotal();
@@ -126,13 +138,26 @@ function generateProduct(){
 	}
 	var outOfStock
 	if(valuesDetails[5] == "Y" ){
-		outOfStock='<input type="button" onClick="return addtoCard('+key+')" class="btn btn-primary" value="Add to Cart">';
+		outOfStock='<br><span> Quantity <input type="number" value="1" min="1" max="9" size="4" style="margin-bottom: 6px;text-align: center;"></span><input type="button" onClick="return addtoCard('+key+',this)" class="btn btn-primary" value="Add to Cart">';
 	}else{
 		outOfStock='<span class="btn btn-danger">Out of Stock</span>';
 	}
-	var ourProducts = '<div class="col-md-6 col-lg-3 ftco-animate fadeInUp ftco-animated"><div class="product"><a href="#" class="img-prod"><img class="img-fluid" src="images/product-'+key+'.jpg" alt="UlweAllinOne">'+disc +'<div class="overlay"></div></a><div class="text py-3 pb-4 px-3 text-center"><h3><a href="#">'+valuesDetails[0]+'</a></h3><div class="d-flex"><div class="pricing123"><p class="price"><span class="mr-2 price-dc">'+valuesDetails[1]+' Rs</span><span class="price-sale">'+valuesDetails[2]+' Rs</span><span class="price-sale">&nbsp;&nbsp;</span>'+outOfStock+'</p></div></div></div></div></div>';
+	var ourProducts = '<div class="col-md-6 col-lg-3 ftco-animate fadeInUp ftco-animated productNameClass" data-id="'+valuesDetails[0]+'" ><div class="product"><a href="#" class="img-prod" style="text-align: center"><img class="img-fluid" src="images/product-'+key+'.jpg" alt="UlweAllinOne">'+disc +'<div class="overlay"></div></a><div class="text py-3 pb-4 px-3 text-center"><h3><a href="#">'+valuesDetails[0]+'</a></h3><div class="d-flex"><div class="pricing123"><p class="price"><span class="mr-2 price-dc">'+valuesDetails[1]+' Rs</span><span class="price-sale">'+valuesDetails[2]+' Rs</span><span class="price-sale">&nbsp;&nbsp;</span>'+outOfStock+'</p></div></div></div></div></div>';
 	$("#productDetails").append(ourProducts);
 	});
+}
+
+function displaySearchResult(obj){
+	
+	if($(obj).val() != ""){
+		$(".productNameClass").each(function(){
+			if($(this).attr('data-id').toLowerCase().indexOf($(obj).val().toLowerCase()) == -1){
+				$(this).hide();
+			}
+		})
+	}else{
+		$(".productNameClass").show();
+	}
 }
 
 function checkOut(){
@@ -143,7 +168,7 @@ function checkOut(){
 	})
 	details = details.substr(0,details.length -1);
 
-	localStorage.setItem("vegdetailsitms",details);
+	localStorage.setItem("milkdetailsitms",details);
 	location.href="checkout.html";	
 }
 
@@ -152,13 +177,12 @@ function closePopup(){
 	localStorage.removeItem("vegmymap");
 	localStorage.removeItem("vegcard");
 	localStorage.removeItem("vegdetailsitms");
-	location.href="VegeFruitsindex.html";
-	
+	location.href="MilkProductindex.html";
+
 }
 
-
 function placeOrder(){
-	
+
 	if($("#fname").val() == '' ){
 		   alert('Please enter your Name.');
 		   $("#fname").focus()
@@ -184,10 +208,10 @@ function placeOrder(){
 		   $("#emailid").focus()
 		   return false;
 	   }
-	
+		 
 	var r = confirm("Are you sure you want to place order?");
 		if (r == true) {
-		
+
 	$('#lodaingModal').modal('show');
 	$("#closeButton").hide();
 	var iteams  = finalOrderDetails;
@@ -218,8 +242,8 @@ function placeOrder(){
 			  url: context + "saveVegOrders",
 			  data:JSON.stringify(array),
 			  success: function (response) { 
-						$("#orderConfirmationContent").html(response);
-						$("#closeButton").show();
+					$("#orderConfirmationContent").html(response);
+					$("#closeButton").show();
 					},
 			  error : function (response) { 						
 					$('#lodaingModal').modal('hide');
@@ -228,6 +252,83 @@ function placeOrder(){
 					}
 
 			});
-	
 		}
 }
+
+function initOrderDetails(){
+		$('#lodaingModal').modal('show');
+			var data = '{"category":"V","password":"'+$("#password").val()+'"}';
+			$.ajax({
+			  type: 'POST',
+			  url: contextCommon + "getOrderHistory",
+			  data : data,
+			  success: function (response) { 
+					setTimeout(hidePopup, 500);
+					generateDetails(response);
+					},
+			  error : function (response) { 
+					setTimeout(hidePopup, 500);					
+					alert(response.responseJSON);
+					
+					}
+
+			});
+
+
+
+}
+
+function generateDetails(response1){
+	$("#orderDetails").html("");
+	var str ="";
+	var lastDate = "";
+	var count =1;
+	var detailsmsg = "";
+	$(response1).each(function(i,response){
+		var selectdd ="";
+		if($($(response).attr('master')).attr('orderStatus') != 'Delivered'){
+		selectdd = '<select id="statusddval'+count+'"><option value="In-Progress">In-Progress</option><option value="Delivered">Delivered</option><option value="UnReachable">UnReachable</option></select>&nbsp;&nbsp;<input type="button" data-id="'+$($(response).attr('master')).attr('id')+'" class="btn btn-primary" onclick="return updatestatus(this,'+count+')" value="update" />';
+	
+		}
+		if(lastDate != $($(response).attr('user')).attr('datetime').substr(0,10)){
+			str = str.replace("#runtime#",detailsmsg);
+			detailsmsg = "";
+			detailsmsg = detailsmsg + '<p >'+count +'. OrderId <b>'+$($(response).attr('master')).attr('orderid')+'</b> placed by <b>'+$($(response).attr('user')).attr('userName')+'</b> using Mobile No. <b>'+$($(response).attr('user')).attr('mobileNo')+'</b> with Total amount <b>'+ $($(response).attr('master')).attr('finalPrice')+' Rs</b> having order status <b>'+$($(response).attr('master')).attr('orderStatus')+'</b>.'+selectdd;
+			str = str +  '<div class="col-sm-12"><div class="cart-wrap ftco-animate fadeInUp ftco-animated"><div class="cart-total mb-3"><h3>'+$($(response).attr('user')).attr('datetime').substr(0,10)+'</h3><div id="detailssub">#runtime#</div></div></div></div>';
+			
+			lastDate = $($(response).attr('user')).attr('datetime').substr(0,10);
+			
+		}else{
+			detailsmsg = detailsmsg + '<p >'+count +'. OrderId <b>'+$($(response).attr('master')).attr('orderid')+'</b> placed by <b>'+$($(response).attr('user')).attr('userName')+'</b> using Mobile No. <b>'+$($(response).attr('user')).attr('mobileNo')+'</b> with Total amount <b>'+ $($(response).attr('master')).attr('finalPrice')+' Rs</b> having order status <b>'+$($(response).attr('master')).attr('orderStatus')+'</b>.'+selectdd;
+				
+		}
+	
+	count++;
+	});
+	str = str.replace("#runtime#",detailsmsg);
+	$("#orderDetails").append(str);
+
+
+
+}
+
+function updatestatus(obj,count){
+
+	var data = '{"category":"V","password":"'+$("#password").val()+'","masterid":"'+$(obj).attr('data-id')+'","status":"'+$("#statusddval"+count).val()+'"}';
+		 $.ajax({
+			  type: 'POST',
+			  url: contextCommon + "updateOrderStatus",
+			  data : data,
+			  success: function (response) { 
+					
+					alert(response);
+					},
+			  error : function (response) { 						
+					
+					alert(response);
+					}
+
+			});
+
+
+}		
