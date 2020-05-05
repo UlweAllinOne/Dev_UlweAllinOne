@@ -1,15 +1,35 @@
+var myCurrentReq = document.getElementById("myscriptLib").getAttribute("myCustomAttrib");
 var map = {};
 var deliveryCharge=0;
 var disc=0;
-var context = "https://m8gohcb5gc.execute-api.ap-south-1.amazonaws.com/dev/milk/";
+var context = "https://m8gohcb5gc.execute-api.ap-south-1.amazonaws.com/dev/"+myCurrentReq+"/";
 var contextCommon = "https://m8gohcb5gc.execute-api.ap-south-1.amazonaws.com/dev/common/";
+var fetchMethod="";
+var category = "";
+var successUrl="";
+var saveMethod="";
+var masterMethod="";
+if(myCurrentReq == 'milk'){
+	fetchMethod="getAllMilkProducts";
+	category="M";
+	successUrl="MilkProductindex.html";
+	saveMethod="saveMilkOrders";
+	masterMethod="getMilkMasterData";
+}
+if(myCurrentReq == 'veg'){
+	fetchMethod="getAllVegProducts";
+	category="V";
+	successUrl="VegeFruitsindex.html";
+	saveMethod="saveVegOrders";
+	masterMethod="getVegMasterData";
+}
 
 cardCount();
 function initMap(type){
 	$('#lodaingModal').modal('show');
 	$.ajax({
 			  type: 'POST',
-			  url: context + "getAllMilkProducts",
+			  url: context + fetchMethod,
 			  success: function (response) { 
 				
 					$(response).each(function(){
@@ -20,7 +40,7 @@ function initMap(type){
 							generateProduct();
 							
 						}
-						localStorage.setItem("milkmymap",JSON.stringify(map))	;
+						localStorage.setItem(myCurrentReq+"mymap",JSON.stringify(map))	;
 						setTimeout(hidePopup, 500);
 					},
 			  error : function (response) { 						
@@ -41,7 +61,7 @@ function hidePopup(){
 
 function cardCount(){
 	var count= 0;
-	var iteams  = localStorage.getItem("milkcard");
+	var iteams  = localStorage.getItem(myCurrentReq+"card");
 	if(iteams != null){
 		$.each(iteams.split(','),function(i,j){
 			if(j != "null" && j != "" && j.split("#")[0] != ""){
@@ -54,7 +74,7 @@ function cardCount(){
 
 function addtoCard(id,obj){
 	var cardId = id +"#"+ $(obj).parent().parent().find('input').eq(0).val()
-	localStorage.setItem("milkcard",localStorage.getItem("milkcard")+","+cardId);
+	localStorage.setItem(myCurrentReq+"card",localStorage.getItem(myCurrentReq+"card")+","+cardId);
 	alert(map[id].split(",")[0]+ " successfully added to cart.");
 	cardCount();
 	return false;
@@ -93,22 +113,22 @@ function mainTotal(){
 }
 
 function removeProduct(j,i){
-	var iteams  = localStorage.getItem("milkcard");
+	var iteams  = localStorage.getItem(myCurrentReq+"card");
 	iteams = iteams.replace(j,"");
-	localStorage.setItem("milkcard",iteams);
+	localStorage.setItem(myCurrentReq+"card",iteams);
 	$("#sectiondetails"+i).remove();
 	mainTotal();
 	cardCount();
 	return false;
 }
 function initCart(){
-	map = JSON.parse(localStorage.getItem("milkmymap"));
+	map = JSON.parse(localStorage.getItem(myCurrentReq+"mymap"));
 	displayCardDetails();
 }
 
 function displayCardDetails(){
 	
-	var iteams  = localStorage.getItem("milkcard");
+	var iteams  = localStorage.getItem(myCurrentReq+"card");
 	$.each(iteams.split(','),function(i,p){
 	if(p != "null" && p != ""){
 		var k=p.split("#")[1];
@@ -168,24 +188,12 @@ function displaySearchResult(obj){
 	}
 }
 
-function checkOut(){
-	
-	var details="";
-	$(".total").each(function(){
-		details = details + $(this).attr("data-val") +"#";
-	})
-	details = details.substr(0,details.length -1);
-
-	localStorage.setItem("milkdetailsitms",details);
-	location.href="checkout.html";	
-}
 
 function closePopup(){
 	$('#lodaingModal').modal('hide');
-	localStorage.removeItem("milkmymap");
-	localStorage.removeItem("milkcard");
-	localStorage.removeItem("milkdetailsitms");
-	location.href="MilkProductindex.html";
+	localStorage.removeItem(myCurrentReq+"mymap");
+	localStorage.removeItem(myCurrentReq+"card");
+	location.href=successUrl;
 
 }
 
@@ -247,7 +255,7 @@ function placeOrder(){
 	array["orderDetails"]=details;
 	$.ajax({
 			  type: 'POST',
-			  url: context + "saveMilkOrders",
+			  url: context + saveMethod,
 			  data:JSON.stringify(array),
 			  success: function (response) { 
 					$("#orderConfirmationContent").html(response);
@@ -266,10 +274,10 @@ function placeOrder(){
 function initMasterRates(){
 
 	$('#lodaingModal').modal('show');
-			var data = '{"category":"M","password":"'+$("#password").val()+'"}';
+			var data = '{"category":"'+category+'","password":"'+$("#password").val()+'"}';
 			$.ajax({
 			  type: 'POST',
-			  url: context + "getMilkMasterData",
+			  url: context + masterMethod,
 			  data : data,
 			  success: function (response) { 
 					setTimeout(hidePopup, 500);
@@ -288,7 +296,7 @@ function initMasterRates(){
 
 function initOrderDetails(){
 			$('#lodaingModal').modal('show');
-			var data = '{"category":"M","password":"'+$("#password").val()+'"}';
+			var data = '{"category":"'+category+'","password":"'+$("#password").val()+'"}';
 			$.ajax({
 			  type: 'POST',
 			  url: contextCommon + "getOrderHistory",
@@ -310,12 +318,32 @@ function initOrderDetails(){
 }
 
 function generateMaster(response1){
-
+	var str="";
+	str="<table><tr><th>ID</th><th>Product Name</th><th>Product Description</th><th>Min Price</th><th>Max Price</th><th>Discount</th><th>Update</th></tr>";
+	var nextid = 1;
 	$(response1).each(function(i,response){
-		var row='<tr><td>'+$(response).attr('id')+'</td><td>'+$(response).attr('productName')+'</td><td>'+$(response).attr('productDesc')+'</td><td>'+$(response).attr('minPrice')+'</td><td>'+$(response).attr('maxPrice')+'</td><td>'+$(response).attr('discount')+'</td></tr>';
-		console.log(row);
+		str = str + '<tr><td><input type="text" size="1" id="id'+i+'" readonly value="'+$(response).attr('id')+'"></td><td><input id="productName'+i+'" type="text" value="'+$(response).attr('productName')+'"></td><td><input id="productdesc'+i+'" type="text" value="'+$(response).attr('productDesc')+'"></td><td><input type="text" id="minVal'+i+'" size="2" value="'+$(response).attr('minPrice')+'"></td><td><input id="maxVal'+i+'" type="text" size="2" value="'+$(response).attr('maxPrice')+'"></td><td><input type="text" size="2" id="disc'+i+'" value="'+$(response).attr('discount')+'"></td><td><input type="button" onClick="return updateRow('+i+')" value="Update" /></tr>';
+		nextid++;
 	});
+	$("#orderDetails").html(addNewRow(str,nextid));
 
+}
+
+function addNewRow(str,i){
+
+	return str + '<tr><td><input type="text" size="1" id="id'+i+'" value="'+i+'"></td><td><input id="productName'+i+'" type="text"></td><td><input id="productdesc'+i+'" type="text"></td><td><input type="text" id="minVal'+i+'" size="2" ></td><td><input id="maxVal'+i+'" type="text" size="2" ></td><td><input type="text" size="2" id="disc'+i+'" ></td><td><input type="button" onClick="return updateRow('+i+')" value="Add New Record" /></tr></table>';
+}
+
+
+function updateRow(i){
+	var map={};
+	map["category"]=category;
+	map["password"]=$("#password").val();
+	map["minVal"]=$("#minVal"+i).val();
+	map["maxVal"]=$("#maxVal"+i).val();
+	map["id"]=$("#id"+i).val();
+	updateTables(JSON.stringify(map),"updateProductMaster");
+	return false;
 }
 
 function generateDetails(response1){
@@ -346,29 +374,28 @@ function generateDetails(response1){
 	count++;
 	});
 	str = str.replace("#runtime#",detailsmsg);
+	
 	$("#orderDetails").append(str);
-
-
-
 }
 
-function updatestatus(obj,count){
 
-	var data = '{"category":"M","password":"'+$("#password").val()+'","masterid":"'+$(obj).attr('data-id')+'","status":"'+$("#statusddval"+count).val()+'"}';
-		 $.ajax({
+function updatestatus(obj,count){
+	var data = '{"category":"'+category+'","password":"'+$("#password").val()+'","masterid":"'+$(obj).attr('data-id')+'","status":"'+$("#statusddval"+count).val()+'"}';
+	 updateTables(data,"updateOrderStatus");
+}	
+
+function updateTables(data,method){
+	$.ajax({
 			  type: 'POST',
-			  url: contextCommon + "updateOrderStatus",
+			  url: contextCommon + method,
 			  data : data,
 			  success: function (response) { 
-					
-					alert(response);
+						alert(response);
 					},
-			  error : function (response) { 						
-					
-					alert(response);
+			  error : function (response) { 
+						alert(response);
 					}
 
 			});
 
-
-}		
+}	
