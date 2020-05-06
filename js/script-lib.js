@@ -159,7 +159,9 @@ function checkQty(obj){
 function generateProduct(){
 	
 	$.map(map, function(value,key){
+	
 	var valuesDetails = value.split(",");
+	if(valuesDetails[5] != 'D'){
 	var disc = '';
 	if(valuesDetails[3] != "" && valuesDetails[3] != " "){
 		disc='<span class="status">'+valuesDetails[3] +'</span>'
@@ -172,6 +174,7 @@ function generateProduct(){
 	}
 	var ourProducts = '<div class="col-md-6 col-lg-3 ftco-animate fadeInUp ftco-animated productNameClass" data-id="'+valuesDetails[0]+'" ><div class="product"><a href="#" class="img-prod" style="text-align: center"><img class="img-fluid" src="images/product-'+key+'.jpg" alt="UlweAllinOne">'+disc +'<div class="overlay"></div></a><div class="text py-3 pb-4 px-3 text-center"><h3><a href="#">'+valuesDetails[0]+'</a></h3><div class="d-flex"><div class="pricing123"><p class="price"><span class="mr-2 price-dc">'+valuesDetails[1]+' Rs</span><span class="price-sale">'+valuesDetails[2]+' Rs</span><span class="price-sale">&nbsp;&nbsp;</span>'+outOfStock+'</p></div></div></div></div></div>';
 	$("#productDetails").append(ourProducts);
+	}
 	});
 }
 
@@ -319,19 +322,18 @@ function initOrderDetails(){
 
 function generateMaster(response1){
 	var str="";
-	str="<table><tr><th>ID</th><th>Product Name</th><th>Product Description</th><th>Min Price</th><th>Max Price</th><th>Discount</th><th>Update</th></tr>";
+	str="<table><tr><th>ID</th><th>Product Name</th><th>Product Description</th><th>Min Price</th><th>Max Price</th><th>Status</th><th>Update</th></tr>";
 	var nextid = 1;
 	$(response1).each(function(i,response){
-		str = str + '<tr><td><input type="text" size="1" id="id'+i+'" readonly value="'+$(response).attr('id')+'"></td><td><input id="productName'+i+'" type="text" value="'+$(response).attr('productName')+'"></td><td><input id="productdesc'+i+'" type="text" value="'+$(response).attr('productDesc')+'"></td><td><input type="text" id="minVal'+i+'" size="2" value="'+$(response).attr('minPrice')+'"></td><td><input id="maxVal'+i+'" type="text" size="2" value="'+$(response).attr('maxPrice')+'"></td><td><input type="text" size="2" id="disc'+i+'" value="'+$(response).attr('discount')+'"></td><td><input type="button" onClick="return updateRow('+i+')" value="Update" /></tr>';
-		nextid++;
+		str = str + '<tr><td><input type="text" size="1" id="id'+i+'" readonly value="'+$(response).attr('id')+'"></td><td><input id="productName'+i+'" type="text" value="'+$(response).attr('productName')+'"></td><td><input id="productdesc'+i+'" type="text" value="'+$(response).attr('productDesc')+'"></td><td><input type="text" id="minVal'+i+'" size="2" value="'+$(response).attr('minPrice')+'"></td><td><input id="maxVal'+i+'" type="text" size="2" value="'+$(response).attr('maxPrice')+'"></td><td><input type="text" size="2" id="stockStatus'+i+'" value="'+$(response).attr('stockStatus')+'"></td><td><input type="button" onClick="return updateRow('+i+')" value="Update" /></tr>';
+		nextid = $(response).attr('id');
 	});
-	$("#orderDetails").html(addNewRow(str,nextid));
+	$("#orderDetails").html(addNewRow(str,++nextid));
 
 }
 
 function addNewRow(str,i){
-
-	return str + '<tr><td><input type="text" size="1" id="id'+i+'" value="'+i+'"></td><td><input id="productName'+i+'" type="text"></td><td><input id="productdesc'+i+'" type="text"></td><td><input type="text" id="minVal'+i+'" size="2" ></td><td><input id="maxVal'+i+'" type="text" size="2" ></td><td><input type="text" size="2" id="disc'+i+'" ></td><td><input type="button" onClick="return updateRow('+i+')" value="Add New Record" /></tr></table>';
+	return str + '<tr><td><input type="text" size="1" id="id'+i+'" value="'+i+'"></td><td><input id="productName'+i+'" type="text"></td><td><input id="productdesc'+i+'" type="text"></td><td><input type="text" id="minVal'+i+'" size="2" ></td><td><input id="maxVal'+i+'" type="text" size="2" ></td><td><input type="text" size="2" id="stockStatus'+i+'" ></td><td><input type="button" onClick="return updateRow('+i+')" value="Add New Record" /></tr></table>';
 }
 
 
@@ -341,8 +343,19 @@ function updateRow(i){
 	map["password"]=$("#password").val();
 	map["minVal"]=$("#minVal"+i).val();
 	map["maxVal"]=$("#maxVal"+i).val();
+	map["productName"]=$("#productName"+i).val();
+	map["productDesc"]=$("#productdesc"+i).val();
+	var disCal = parseInt($("#maxVal"+i).val()) - parseInt($("#minVal"+i).val());
+	disCal = (disCal/parseInt($("#maxVal"+i).val())) * 100;
+	if(disCal == 0){
+		disCal = " ";
+	}else{
+		disCal = Math.trunc(disCal)+"%"
+	}
+	map["discount"]=disCal;
 	map["id"]=$("#id"+i).val();
-	updateTables(JSON.stringify(map),"updateProductMaster");
+	map["stockStatus"]=$("#stockStatus"+i).val();
+	updateTables(JSON.stringify(map),"updateProductMaster","initMasterRates");
 	return false;
 }
 
@@ -361,13 +374,13 @@ function generateDetails(response1){
 		if(lastDate != $($(response).attr('user')).attr('datetime').substr(0,10)){
 			str = str.replace("#runtime#",detailsmsg);
 			detailsmsg = "";
-			detailsmsg = detailsmsg + '<p >'+count +'. OrderId <b>'+$($(response).attr('master')).attr('orderid')+'</b> placed by <b>'+$($(response).attr('user')).attr('userName')+'</b> using Mobile No. <b>'+$($(response).attr('user')).attr('mobileNo')+'</b> with Total amount <b>'+ $($(response).attr('master')).attr('finalPrice')+' Rs</b> having order status <b>'+$($(response).attr('master')).attr('orderStatus')+'</b>.'+selectdd;
+			detailsmsg = detailsmsg + '<p>'+count +'. <input type="button" data-id='+$($(response).attr('master')).attr('id')+' onClick="return viewOrderDetails(this)" value="OrderDetails" /> OrderId <b>'+$($(response).attr('master')).attr('orderid')+'</b> placed by <b>'+$($(response).attr('user')).attr('userName')+'</b> using Mobile No. <b>'+$($(response).attr('user')).attr('mobileNo')+'</b> with Total amount <b>'+ $($(response).attr('master')).attr('finalPrice')+' Rs</b> having order status <b>'+$($(response).attr('master')).attr('orderStatus')+'</b>.'+selectdd;
 			str = str +  '<div class="col-sm-12"><div class="cart-wrap ftco-animate fadeInUp ftco-animated"><div class="cart-total mb-3"><h3>'+$($(response).attr('user')).attr('datetime').substr(0,10)+'</h3><div id="detailssub">#runtime#</div></div></div></div>';
 			
 			lastDate = $($(response).attr('user')).attr('datetime').substr(0,10);
 			
 		}else{
-			detailsmsg = detailsmsg + '<p >'+count +'. OrderId <b>'+$($(response).attr('master')).attr('orderid')+'</b> placed by <b>'+$($(response).attr('user')).attr('userName')+'</b> using Mobile No. <b>'+$($(response).attr('user')).attr('mobileNo')+'</b> with Total amount <b>'+ $($(response).attr('master')).attr('finalPrice')+' Rs</b> having order status <b>'+$($(response).attr('master')).attr('orderStatus')+'</b>.'+selectdd;
+			detailsmsg = detailsmsg + '<p>'+count +'. <input type="button" data-id='+$($(response).attr('master')).attr('id')+' onClick="return viewOrderDetails(this)" value="OrderDetails" /> OrderId <b>'+$($(response).attr('master')).attr('orderid')+'</b> placed by <b>'+$($(response).attr('user')).attr('userName')+'</b> using Mobile No. <b>'+$($(response).attr('user')).attr('mobileNo')+'</b> with Total amount <b>'+ $($(response).attr('master')).attr('finalPrice')+' Rs</b> having order status <b>'+$($(response).attr('master')).attr('orderStatus')+'</b>.'+selectdd;
 				
 		}
 	
@@ -378,19 +391,47 @@ function generateDetails(response1){
 	$("#orderDetails").append(str);
 }
 
+function viewOrderDetails(obj){
+	var data = '{"category":"'+category+'","id":"'+$(obj).attr('data-id')+'"}';
+	$.ajax({
+		type: 'POST',
+		url: "https://m8gohcb5gc.execute-api.ap-south-1.amazonaws.com/dev/common/getOrderDetailsData",
+		data : data,
+		success: function (response) { 
+				generateTabularFormat(response);
+			},
+		error : function (response) { 						
+			alert(response);
+			}
+
+		});
+}
+
+function generateTabularFormat(response1){
+	var details = "<ol>";
+	$(response1).each(function(i,response){
+		details = details +"<li>"+response+"</li>";
+	});
+	details = details + "</ol>";
+	$("#exampleModalLabel").html("Below are Order Details");
+	$(".modal-body").html(details);
+	$('#lodaingModal').modal('show');
+}
 
 function updatestatus(obj,count){
 	var data = '{"category":"'+category+'","password":"'+$("#password").val()+'","masterid":"'+$(obj).attr('data-id')+'","status":"'+$("#statusddval"+count).val()+'"}';
-	 updateTables(data,"updateOrderStatus");
+	 updateTables(data,"updateOrderStatus","initOrderDetails");
 }	
 
-function updateTables(data,method){
+function updateTables(data,method,call){
 	$.ajax({
 			  type: 'POST',
 			  url: contextCommon + method,
 			  data : data,
 			  success: function (response) { 
 						alert(response);
+						eval(call+"()");
+						
 					},
 			  error : function (response) { 
 						alert(response);
@@ -399,3 +440,29 @@ function updateTables(data,method){
 			});
 
 }	
+function submitViewOrder(){
+$("#ordersection").hide();
+			
+			 $.ajax({
+			  type: 'POST',
+			  url: contextCommon + "findOrder",
+			  data : '{"orderid":"'+$("#Orderid").val()+'"}',
+			  success: function (response) { 
+					var str = "";
+						$("#orderHeader").html('Thanks '+ $($(response).attr('user')).attr('userName') + ' for placing order with UlweAllInOne online Store.')
+						str = str + '<p> Your order was placed on '+$($(response).attr('master')).attr('datetime')+'. Order status is '+$($(response).attr('master')).attr('orderStatus')+'. </p>';
+						str = str + '<p> Delivery person will contact you on mobile no '+$($(response).attr('user')).attr('mobileNo')+', or email id '+$($(response).attr('user')).attr('emailid')+'. </p>';
+						str = str + '<p> Delivery address is '+$($(response).attr('user')).attr('address')+'. </p>';
+						str = str + '<p><input type="button" value="Your Order Details" class="btn btn-primary"  data-id='+$($(response).attr('master')).attr('id')+' onClick="return viewOrderDetails(this)" /> </p>';
+				$("#detailssub").html(str);
+				$("#ordersection").show();
+				category = $($(response).attr('master')).attr('catagory');
+				},
+			  error : function (response) { 						
+					
+					alert("Please enter valid Order ID. Order ID is send to you via email and SMS.");
+					}
+
+			});
+			
+	}	
