@@ -197,7 +197,7 @@ function applyCoupon(){
 	if($("#coupontxt").val() == "UlweCoupneD"){
 		disc = "-" + deliveryCharge;
 		mainTotal();
-		alert("Coupon apply successfully.")
+		alert("Coupon applyed successfully.")
 	}else{
 		alert("Sorry No Coupon is availabel with this code.")
 	}
