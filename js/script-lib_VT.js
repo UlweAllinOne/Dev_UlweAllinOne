@@ -76,8 +76,9 @@ function calcuateAmt(obj,j,orgValue,id){
 	return false;
 }
 var finalOrderDetails="";
+var sum = 0;
 function mainTotal(){
-	var sum = 0;
+	sum = 0;
 	$.each($(".total"),function(i,j){
 		var value = $(j).html().split(" ");
 		sum = sum + parseInt(value[0]);
@@ -92,6 +93,11 @@ function mainTotal(){
 	}else if(sum > 200){
 		deliveryCharge=0;
 	}
+	if(category == 'A'){
+		disc=0;
+		deliveryCharge=0;
+	}
+
 	$("#deliveryCharge").html(deliveryCharge + " Rs");
 	$("#disc").html(disc + " Rs");
 	var finalTot = parseInt(sum) + parseInt(deliveryCharge) + parseInt(disc);
@@ -100,6 +106,7 @@ function mainTotal(){
 }
 
 function removeProduct(j,i){
+	disc = 0
 	var iteams  = localStorage.getItem(myCurrentReq+"card");
 	iteams = iteams.replace(j,"");
 	localStorage.setItem(myCurrentReq+"card",iteams);
@@ -114,7 +121,11 @@ function initCart(){
 }
 
 function displayCardDetails(){
-	
+
+	var style="";
+	if(category == 'A'){
+		style="display:none";
+	}
 	var iteams  = localStorage.getItem(myCurrentReq+"card");
 	$.each(iteams.split(','),function(i,p){
 	if(p != "null" && p != ""){
@@ -127,7 +138,7 @@ function displayCardDetails(){
 		var value = map[j].split(',');
 		var finalPrice = value[2] * k;
 		var clickFn = "return removeProduct('"+p+"',"+i+")";
-		var str = '<div class="col-md-6 col-lg-3 ftco-animate fadeInUp ftco-animated" id="sectiondetails'+i+'"><div class="product"><a href="#" style="text-align: center" class="img-prod"><img class="img-fluid" src="images/product-'+j+'.jpg" alt="Colorlib Template"><div class="overlay"></div></a><div class="text py-3 pb-4 px-3 text-center"><h3><a href="#">'+value[0]+'</a></h3><div class="pricing123"><p class="price"><span class="price-sale">Price - '+value[2]+' Rs</span><br><span class="price-sale">&nbsp;&nbsp;Quantity - '+k+'</span><br><span class="price-sale">&nbsp;&nbsp;Final Price - '+finalPrice+' Rs</span><br><span class="price-sale">&nbsp;&nbsp;<input type="button" value="Remove from cart" onclick="'+clickFn +'" class="btn btn-primary"  ></span><span class="total" style="display:none" data-val="'+j+','+k+'" id="totVal'+i+'">'+finalPrice+' Rs</span></p></div></div></div></div>';
+		var str = '<div class="col-md-6 col-lg-3 ftco-animate fadeInUp ftco-animated" id="sectiondetails'+i+'"><div class="product"><a href="#" style="text-align: center" class="img-prod"><img class="img-fluid" src="images/product-'+j+'.jpg" alt="Colorlib Template"><div class="overlay"></div></a><div class="text py-3 pb-4 px-3 text-center"><h3><a href="#">'+value[0]+'</a></h3><div class="pricing123"><p class="price"><span class="price-sale" style="'+style+'" >Price - '+value[2]+' Rs</span><br><span style="'+style+'" class="price-sale">&nbsp;&nbsp;Quantity - '+k+'</span><br><span class="price-sale" style="'+style+'">&nbsp;&nbsp;Final Price - '+finalPrice+' Rs</span><br><span class="price-sale">&nbsp;&nbsp;<input type="button" value="Remove from cart" onclick="'+clickFn +'" class="btn btn-primary"  ></span><span class="total" style="display:none" data-val="'+j+','+k+'" id="totVal'+i+'">'+finalPrice+' Rs</span></p></div></div></div></div>';
 		$("#cardDetailsData").append(str);
 		}
 	}
@@ -145,6 +156,10 @@ function checkQty(obj){
 
 function generateProduct(){
 	
+	var style="";
+	if(category == 'A'){
+		style="display:none";
+	}
 	$.map(map, function(value,key){
 	
 	var valuesDetails = value.split(",");
@@ -155,17 +170,18 @@ function generateProduct(){
 	}
 	var outOfStock
 	if(valuesDetails[5] == "Y" ){
-		outOfStock='<br><span> Quantity <input type="number" value="1" min="1" max="9" onKeyup="return checkQty(this)" size="4" style="margin-bottom: 6px;text-align: center;"></span><input type="button" onClick="return addtoCard('+key+',this)" class="btn btn-primary" value="Add to Cart">';
+		outOfStock='<br><span style="'+style+'"> Quantity <input type="number" value="1" min="1" max="9" onKeyup="return checkQty(this)" size="4" style="margin-bottom: 6px;text-align: center;"></span><input type="button" onClick="return addtoCard('+key+',this)" class="btn btn-primary" value="Add to Cart">';
 	}else{
-		outOfStock='<span class="btn btn-danger">Out of Stock</span>';
+		outOfStock='<span style="'+style+'" class="btn btn-danger">Out of Stock</span>';
 	}
 	var discStr = "";
 	if(valuesDetails[2] == valuesDetails[1]){
-		discStr='<span class="price-sale">'+valuesDetails[2]+' Rs</span>';
+		discStr='<span class="price-sale" style="'+style+'">'+valuesDetails[2]+' Rs</span>';
 	}else{
-		discStr='<span class="mr-2 price-dc">'+valuesDetails[1]+' Rs</span><span class="price-sale">'+valuesDetails[2]+' Rs</span>';
+		discStr='<span class="mr-2 price-dc" style="'+style+'">'+valuesDetails[1]+' Rs</span><span class="price-sale">'+valuesDetails[2]+' Rs</span>';
 	}
-	var ourProducts = '<div class="col-md-6 col-lg-3 ftco-animate fadeInUp ftco-animated productNameClass" data-id="'+valuesDetails[0]+'" ><div class="product"><a href="#" class="img-prod" style="text-align: center"><img class="img-fluid" src="images/product-'+key+'.jpg" alt="UlweAllinOne">'+disc +'<div class="overlay"></div></a><div class="text py-3 pb-4 px-3 text-center"><h3><a href="#">'+valuesDetails[0]+'</a></h3><div class="d-flex"><div class="pricing123"><p class="price">'+discStr+'<span class="price-sale">&nbsp;&nbsp;</span>'+outOfStock+'</p></div></div></div></div></div>';
+	
+	var ourProducts = '<div class="col-md-6 col-lg-3 ftco-animate fadeInUp ftco-animated productNameClass" data-id="'+valuesDetails[0]+'" ><div class="product"><a href="#" class="img-prod" style="text-align: center"><img class="img-fluid" src="images/product-'+key+'.jpg" alt="UlweAllinOne">'+disc +'<div class="overlay"></div></a><div class="text py-3 pb-4 px-3 text-center"><h3><a href="#">'+valuesDetails[0]+'</a></h3><div class=""><div class="pricing123"><p class="price" >'+discStr+'<span class="price-sale" >&nbsp;&nbsp;</span>'+outOfStock+'</p></div></div></div></div></div>';
 	$("#productDetails").append(ourProducts);
 	}
 	});
@@ -194,8 +210,13 @@ function closePopup(){
 }
 
 function applyCoupon(){
-	if($("#coupontxt").val() == "UlweCoupneD"){
+	mainTotal();
+	if($("#coupontxt").val() == "NODELVCHG" && sum < 200 ){
 		disc = "-" + deliveryCharge;
+		mainTotal();
+		alert("Coupon applyed successfully.")
+	}else if($("#coupontxt").val() == "ULWEOFF10" && sum > 200){
+		disc = "-10";
 		mainTotal();
 		alert("Coupon applyed successfully.")
 	}else{
@@ -377,18 +398,18 @@ function generateDetails(response1){
 		var selectdd ="";
 		if($($(response).attr('master')).attr('orderStatus') != 'Delivered'){
 		selectdd = '<select id="statusddval'+count+'"><option value="In-Progress">In-Progress</option><option value="Delivered">Delivered</option><option value="UnReachable">UnReachable</option><option value="Out of Stock">Out of Stock</option></select>&nbsp;&nbsp;<input type="button" data-id="'+$($(response).attr('master')).attr('id')+'"  data-emailid="'+$($(response).attr('user')).attr('emailid')+'" data-name="'+$($(response).attr('user')).attr('userName')+'" class="btn btn-primary" onclick="return updatestatus(this,'+count+')" value="update" />';
-	
 		}
+		//selectdd = selectdd + "
 		if(lastDate != $($(response).attr('user')).attr('datetime').substr(0,10)){
 			str = str.replace("#runtime#",detailsmsg);
 			detailsmsg = "";
-			detailsmsg = detailsmsg + '<p>'+count +'. <input type="button" data-id='+$($(response).attr('master')).attr('id')+' onClick="return viewOrderDetails(this)" value="OrderDetails" /> OrderId <b>'+$($(response).attr('master')).attr('orderid')+'</b> placed by <b>'+$($(response).attr('user')).attr('userName')+'</b> using Mobile No. <b>'+$($(response).attr('user')).attr('mobileNo')+'</b> with Total amount <b>'+ $($(response).attr('master')).attr('finalPrice')+' Rs</b> having order status <b>'+$($(response).attr('master')).attr('orderStatus')+'</b>.'+selectdd;
+			detailsmsg = detailsmsg + '<p>'+count +'. <input type="button" data-id='+$($(response).attr('master')).attr('id')+' onClick="return viewOrderDetails(this)" value="OrderDetails" /> OrderId <b>'+$($(response).attr('master')).attr('orderid')+'</b> placed by <b>'+$($(response).attr('user')).attr('userName')+'</b> using Mobile No. <b>'+$($(response).attr('user')).attr('mobileNo')+'</b> with Total amount <b>'+ $($(response).attr('master')).attr('finalPrice')+' Rs. Address Details :</b> '+ $($(response).attr('user')).attr('address')+'. having order status <b>'+$($(response).attr('master')).attr('orderStatus')+'</b>.'+selectdd;
 			str = str +  '<div class="col-sm-12"><div class="cart-wrap ftco-animate fadeInUp ftco-animated"><div class="cart-total mb-3"><h3>'+$($(response).attr('user')).attr('datetime').substr(0,10)+'</h3><div id="detailssub">#runtime#</div></div></div></div>';
 			
 			lastDate = $($(response).attr('user')).attr('datetime').substr(0,10);
 			
 		}else{
-			detailsmsg = detailsmsg + '<p>'+count +'. <input type="button" data-id='+$($(response).attr('master')).attr('id')+' onClick="return viewOrderDetails(this)" value="OrderDetails" /> OrderId <b>'+$($(response).attr('master')).attr('orderid')+'</b> placed by <b>'+$($(response).attr('user')).attr('userName')+'</b> using Mobile No. <b>'+$($(response).attr('user')).attr('mobileNo')+'</b> with Total amount <b>'+ $($(response).attr('master')).attr('finalPrice')+' Rs</b> having order status <b>'+$($(response).attr('master')).attr('orderStatus')+'</b>.'+selectdd;
+			detailsmsg = detailsmsg + '<p>'+count +'. <input type="button" data-id='+$($(response).attr('master')).attr('id')+' onClick="return viewOrderDetails(this)" value="OrderDetails" /> OrderId <b>'+$($(response).attr('master')).attr('orderid')+'</b> placed by <b>'+$($(response).attr('user')).attr('userName')+'</b> using Mobile No. <b>'+$($(response).attr('user')).attr('mobileNo')+'</b> with Total amount <b>'+ $($(response).attr('master')).attr('finalPrice')+' Rs. Address Details :</b> '+ $($(response).attr('user')).attr('address')+'. having order status <b>'+$($(response).attr('master')).attr('orderStatus')+'</b>.'+selectdd;
 				
 		}
 	
