@@ -37,16 +37,9 @@
     		<div class="row no-gutters d-flex align-items-start align-items-center px-md-0">
 	    		<div class="col-lg-12 d-block">
 		    		<div class="row d-flex">
-		    			<!-- <div class="col-md pr-4 d-flex topper align-items-center">
-					    	<div class="icon mr-2 d-flex justify-content-center align-items-center"><span class="icon-phone2"></span></div>
-						    <span class="text">9820684534</span>
-					    </div> -->
 					    <div class="col-md pr-4 d-flex topper align-items-center">
 					    	<div class="icon mr-2 d-flex justify-content-center align-items-center"><span class="icon-paper-plane"></span></div>
 						    <span class="text">info@ulweallinone.in</span>
-					    </div>
-					    <div class="col-md-5 pr-4 d-flex topper align-items-center text-lg-right">
-						    <span class="text">0-2 Business days delivery &amp; Free Returns</span>
 					    </div>
 				    </div>
 			    </div>
@@ -55,6 +48,7 @@
     </div>
     <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
 	    <div class="container">
+	    <img src="img/logo.gif" width="50" height="50">
 	      <a class="navbar-brand" href="index.html">UlweAllinOne</a>
 	      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
 	        <span class="oi oi-menu"></span> Menu
@@ -63,8 +57,6 @@
 	      <div class="collapse navbar-collapse" id="ftco-nav">
 	        <ul class="navbar-nav ml-auto">
 	          <li class="nav-item"><a href="index.html" class="nav-link">Home</a></li>
-	          <li class="nav-item active"><a href="ViewOrders.html" class="nav-link">View Orders</a></li>
-	          
 	        </ul>
 	      </div>
 	    </div>
@@ -73,31 +65,24 @@
 <!-- <div class="container"> -->
 <div class="row">
 	<div class="col-lg-4 mt-5 cart-wrap ftco-animate">
-	 			<div class="cart-total mb-3">
-	 					<h3>View Order details</h3>
-	 					<p>Enter your Order Number</p>
-						
-	            <div class="form-group">
-	              	<!-- <label for="">View Order details</label> -->
-	                <input id="Orderid" type="text" class="form-control text-left px-3" onkeypress="return checkSpcialChar(event)"  placeholder="" maxlength=20>
-	            </div>
-	            <input type="submit" value="View Orders"  onclick="return submitViewOrder()" class="btn btn-primary py-3 px-5">
-	            </div>
+ 			<div class="cart-total mb-3">
+					<h3 style="color: red">---- COVID 19 Update ----</h3>
+					
+ 					<h3>Hello Ulwe Residence,</h3>
+ 					<h3>We are temporarily suspending operations.</h3>
+ 					<p>Your needs have always been our priority and our promise is that we will be back to serve you, as soon as possible.</p>
+					<p>You can contact us, by sending eMail on info@ulweallinone.in </p>
+					<br>
+					<p>Thanks, </p>
+					<p>WWW.UlweAllinOne.in </p>
+					
+            
+            </div>
 	</div>
 </div>
 
-<div class="container" id="ordersection">
-	<div class="row">
-		<div class="cart-wrap ftco-animate fadeInUp ftco-animated">
-			<div class="cart-total mb-3"><h3 id="orderHeader"></h3>
-				<div id="detailssub"></div>
-				
-			</div>
-		</div>
-	</div>
 
-</div>
-   <br><br><br>
+   <br>
   <div class="modal fade" id="lodaingModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -149,17 +134,6 @@
   <script src="js/aos.js"></script>
   <script src="js/scrollax.min.js"></script>
   <script src="js/main.js"></script>
-<script id="myscriptLib" myCustomAttrib="common"  src="js/script-lib.js"></script>
-   <script type="text/javascript">
-	$("#ordersection").hide();
-   function checkSpcialChar(event){
-	   if(!((event.keyCode >= 64) && (event.keyCode <= 90) || (event.keyCode >= 32) && (event.keyCode <= 32) || (event.keyCode >= 95) && (event.keyCode <= 122) || (event.keyCode >= 44) && (event.keyCode <= 57))){
-          event.returnValue = false;
-          return;
-       }
-       event.returnValue = true;
-    }
- </script>
-   
+  <script id="myscriptLib" myCustomAttrib="common"  src="js/script-lib.js"></script>
   </body>
 </html>
