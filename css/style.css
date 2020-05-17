@@ -10014,3 +10014,11 @@ textarea.form-control {
     stroke-dasharray: 89, 200;
     stroke-dashoffset: -136px; } }
    
+   marquee{
+      font-size: 20px;
+      font-weight: 800;
+      color: Red;
+      font-family: sans-serif;
+      }
+   
+   

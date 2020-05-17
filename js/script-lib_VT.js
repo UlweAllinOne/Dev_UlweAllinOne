@@ -93,7 +93,7 @@ function mainTotal(){
 	}else if(sum > 200){
 		deliveryCharge=0;
 	}
-	if(category == 'A'){
+	if(category == 'A' || category == 'V'){
 		disc=0;
 		deliveryCharge=0;
 	}
@@ -226,6 +226,12 @@ function applyCoupon(){
 }
 
 function placeOrder(){
+	
+	if ($("#mainTotal").val() < 200){
+		alert('Order Amount Should be above 200 Rs.');
+		   $("#fname").focus()
+		   return false;
+	}
 
 	if($("#fname").val() == '' ){
 		   alert('Please enter your Name.');
