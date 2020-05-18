@@ -227,11 +227,11 @@ function applyCoupon(){
 
 function placeOrder(){
 	
-	/*if ($("#mainTotal").val() < 200){
+	if (($("#mainTotal").val() > 1) || ($("#mainTotal").val() < 200)){
 		alert('Order Amount Should be above 200 Rs.');
 		   $("#fname").focus()
 		   return false;
-	}*/
+	}
 
 	if($("#fname").val() == '' ){
 		   alert('Please enter your Name.');
