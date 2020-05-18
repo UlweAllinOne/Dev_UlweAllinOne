@@ -228,7 +228,7 @@ function applyCoupon(){
 function placeOrder(){
 	var iteams  = finalOrderDetails;
 	
-	if ((Integer.parseInt(iteams.split(',')[1]) > 1) || (Integer.parseInt(iteams.split(',')[1]) < 200)){
+	if ((parseInt(iteams.split(',')[1]) > 1) || (parseInt(iteams.split(',')[1]) < 200)){
 		alert('Order Amount Should be above 200 Rs.');
 		   $("#fname").focus()
 		   return false;
