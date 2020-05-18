@@ -1,1 +1,510 @@
-var myCurrentReq=document.getElementById("myscriptLib").getAttribute("myCustomAttrib"),map={},deliveryCharge=0,disc=0,context="https://m8gohcb5gc.execute-api.ap-south-1.amazonaws.com/dev/"+myCurrentReq+"/",contextCommon="https://m8gohcb5gc.execute-api.ap-south-1.amazonaws.com/dev/common/",category=myCurrentReq.charAt(0).toUpperCase(),typeName=category+myCurrentReq.substr(1),fetchMethod="getAll"+typeName+"Products",successUrl=typeName+"index.html",saveMethod="save"+typeName+"Orders",masterMethod="get"+typeName+"MasterData";function initMap(t){$("#lodaingModal").modal("show"),$.ajax({type:"POST",url:context+fetchMethod,success:function(a){$(a).each(function(){map[$(this).attr("id")]=$(this).attr("productName")+","+$(this).attr("maxPrice")+","+$(this).attr("minPrice")+","+$(this).attr("discount")+","+$(this).attr("productDesc")+","+$(this).attr("stockStatus")}),"H"==t&&generateProduct(),localStorage.setItem(myCurrentReq+"mymap",JSON.stringify(map)),setTimeout(hidePopup,500)},error:function(t){setTimeout(hidePopup,500),alert(t)}})}function hidePopup(){$("#lodaingModal").modal("hide")}function cardCount(){var t=0,a=localStorage.getItem(myCurrentReq+"card");null!=a&&$.each(a.split(","),function(a,e){"null"!=e&&""!=e&&""!=e.split("#")[0]&&t++}),$(".cardCount").html("["+t+"]")}function addtoCard(t,a){var e=t+"#"+$(a).parent().parent().find("input").eq(0).val();return localStorage.setItem(myCurrentReq+"card",localStorage.getItem(myCurrentReq+"card")+","+e),alert(map[t].split(",")[0]+" successfully added to cart."),cardCount(),!1}function calcuateAmt(t,a,e,r){if($(t).val()>0&&$(t).val()<10){var s=$(t).val()*e;$("#totVal"+a).html(s+" Rs").attr("data-val",r+","+$(t).val())}return mainTotal(),!1}cardCount();var finalOrderDetails="",sum=0;function mainTotal(){sum=0,$.each($(".total"),function(t,a){var e=$(a).html().split(" ");sum+=parseInt(e[0])}),$("#finalTotal").html(sum+" Rs"),sum<=50?deliveryCharge=20:sum<=100&&sum>50?deliveryCharge=10:sum<=200&&sum>101?deliveryCharge=5:sum>200&&(deliveryCharge=0),"A"!=category&&"V"!=category||(disc=0,deliveryCharge=0),$("#deliveryCharge").html(deliveryCharge+" Rs"),$("#disc").html(disc+" Rs");var t=parseInt(sum)+parseInt(deliveryCharge)+parseInt(disc);$("#mainTotal").html(t+" Rs"),finalOrderDetails=sum+","+t}function removeProduct(t,a){disc=0;var e=localStorage.getItem(myCurrentReq+"card");return e=e.replace(t,""),localStorage.setItem(myCurrentReq+"card",e),$("#sectiondetails"+a).remove(),mainTotal(),cardCount(),!1}function initCart(){map=JSON.parse(localStorage.getItem(myCurrentReq+"mymap")),displayCardDetails()}function displayCardDetails(){var t="";"A"==category&&(t="display:none");var a=localStorage.getItem(myCurrentReq+"card");$.each(a.split(","),function(a,e){if("null"!=e&&""!=e){var r=e.split("#")[1];null==r&&(r=1);var s=e.split("#")[0];if(""!=s){var i=map[s].split(","),o=i[2]*r,l="return removeProduct('"+e+"',"+a+")",n='<div class="col-md-6 col-lg-3 ftco-animate fadeInUp ftco-animated" id="sectiondetails'+a+'"><div class="product"><a href="#" style="text-align: center" class="img-prod"><img class="img-fluid" src="images/product-'+s+'.jpg" alt="Colorlib Template"><div class="overlay"></div></a><div class="text py-3 pb-4 px-3 text-center"><h3><a href="#">'+i[0]+'</a></h3><div class="pricing123"><p class="price"><span class="price-sale" style="'+t+'" >Price - '+i[2]+' Rs</span><br><span style="'+t+'" class="price-sale">&nbsp;&nbsp;Quantity - '+r+'</span><br><span class="price-sale" style="'+t+'">&nbsp;&nbsp;Final Price - '+o+' Rs</span><br><span class="price-sale">&nbsp;&nbsp;<input type="button" value="Remove from cart" onclick="'+l+'" class="btn btn-primary"  ></span><span class="total" style="display:none" data-val="'+s+","+r+'" id="totVal'+a+'">'+o+" Rs</span></p></div></div></div></div>";$("#cardDetailsData").append(n)}}}),mainTotal()}function checkQty(t){""!=$(t).val()&&($(t).val()>0&&$(t).val()<10||$(t).val("1"))}function generateProduct(){var t="";"A"==category&&(t="display:none"),$.map(map,function(a,e){var r=a.split(",");if("D"!=r[5]){var s,i="";""!=r[3]&&" "!=r[3]&&(i='<span class="status">'+r[3]+"</span>"),s="Y"==r[5]?'<br><span style="'+t+'"> Quantity <input type="number" value="1" min="1" max="9" onKeyup="return checkQty(this)" size="4" style="margin-bottom: 6px;text-align: center;"></span><input type="button" onClick="return addtoCard('+e+',this)" class="btn btn-primary" value="Add to Cart">':'<span style="'+t+'" class="btn btn-danger">Out of Stock</span>';var o="";o=r[2]==r[1]?'<span class="price-sale" style="'+t+'">'+r[2]+" Rs</span>":'<span class="mr-2 price-dc" style="'+t+'">'+r[1]+' Rs</span><span class="price-sale">'+r[2]+" Rs</span>";var l='<div class="col-md-6 col-lg-3 ftco-animate fadeInUp ftco-animated productNameClass" data-id="'+r[0]+'" ><div class="product"><a href="#" class="img-prod" style="text-align: center"><img class="img-fluid" src="images/product-'+e+'.jpg" alt="UlweAllinOne">'+i+'<div class="overlay"></div></a><div class="text py-3 pb-4 px-3 text-center"><h3><a href="#">'+r[0]+'</a></h3><div class=""><div class="pricing123"><p class="price" >'+o+'<span class="price-sale" >&nbsp;&nbsp;</span>'+s+"</p></div></div></div></div></div>";$("#productDetails").append(l)}})}function displaySearchResult(t){""!=$(t).val()?$(".productNameClass").each(function(){-1==$(this).attr("data-id").toLowerCase().indexOf($(t).val().toLowerCase())&&$(this).hide()}):$(".productNameClass").show()}function closePopup(){$("#lodaingModal").modal("hide"),localStorage.removeItem(myCurrentReq+"mymap"),localStorage.removeItem(myCurrentReq+"card"),location.href=successUrl}function applyCoupon(){return mainTotal(),"NODELVCHG"==$("#coupontxt").val()&&sum<200?(disc="-"+deliveryCharge,mainTotal(),alert("Coupon applyed successfully.")):"ULWEOFF10"==$("#coupontxt").val()&&sum>200?(disc="-10",mainTotal(),alert("Coupon applyed successfully.")):alert("Sorry No Coupon is availabel with this code."),!1}function placeOrder(){if($("#mainTotal").val()>1||$("#mainTotal").val()<200)return alert("Order Amount Should be above 200 Rs."),$("#fname").focus(),!1;if(""==$("#fname").val())return alert("Please enter your Name."),$("#fname").focus(),!1;if(""==$("#streetAddress").val())return alert("Please enter Address."),$("#streetAddress").focus(),!1;if(""==$("#mobileNo").val())return alert("Please enter Mobile Number."),$("#mobileNo").focus(),!1;if(10!=$("#mobileNo").val().length)return alert("Please enter 10 digit Mobile Number."),$("#mobileNo").focus(),!1;if(""==$("#emailid").val())return alert("Please enter emailid."),$("#emailid").focus(),!1;if(1==confirm("Are you sure you want to place order?")){$("#lodaingModal").modal("show"),$("#closeButton").hide();var t=finalOrderDetails;$("#finalTotal").html(t.split(",")[0]),$("#deliveryCharge").html(deliveryCharge),$("#disc").html(disc),$("#mainTotal").html(t.split(",")[1]);var a={};a.userName=$("#fname").val()+" "+$("#lname").val(),a.address=$("#sector").val()+", "+$("#apartment").val()+", "+$("#streetAddress").val()+", "+$("#city").val()+", "+$("#pincode").val(),a.emailid=$("#emailid").val(),a.mobileNo=$("#mobileNo").val(),a.devCharge=deliveryCharge,a.discount=disc,a.totPrice=t.split(",")[0],a.finalPrice=t.split(",")[1];var e="";$(".total").each(function(){e=e+$(this).attr("data-val")+"#"}),e=e.substr(0,e.length-1),a.orderDetails=e,$.ajax({type:"POST",url:context+saveMethod,data:JSON.stringify(a),success:function(t){$("#orderConfirmationContent").html(t),$("#closeButton").show()},error:function(t){$("#lodaingModal").modal("hide"),$("#closeButton").show(),alert(t)}})}}function initMasterRates(){$("#lodaingModal").modal("show");var t='{"category":"'+category+'","password":"'+$("#password").val()+'"}';$.ajax({type:"POST",url:context+masterMethod,data:t,success:function(t){setTimeout(hidePopup,500),generateMaster(t)},error:function(t){setTimeout(hidePopup,500),alert(t.responseJSON)}})}function initOrderDetails(){$("#lodaingModal").modal("show");var t='{"category":"'+category+'","password":"'+$("#password").val()+'"}';$.ajax({type:"POST",url:contextCommon+"getOrderHistory",data:t,success:function(t){setTimeout(hidePopup,500),generateDetails(t)},error:function(t){setTimeout(hidePopup,500),alert(t.responseJSON)}})}function generateMaster(t){var a="";a="<table><tr><th>ID</th><th>Product Name</th><th>Product Description</th><th>Min Price</th><th>Max Price</th><th>Status</th><th>Update</th></tr>";var e=1;$(t).each(function(t,r){a=a+'<tr><td><input type="text" size="1" id="id'+t+'" readonly value="'+$(r).attr("id")+'"></td><td><input id="productName'+t+'" type="text" value="'+$(r).attr("productName")+'"></td><td><input id="productdesc'+t+'" type="text" value="'+$(r).attr("productDesc")+'"></td><td><input type="text" id="minVal'+t+'" size="2" value="'+$(r).attr("minPrice")+'"></td><td><input id="maxVal'+t+'" type="text" size="2" value="'+$(r).attr("maxPrice")+'"></td><td><input type="text" size="2" id="stockStatus'+t+'" value="'+$(r).attr("stockStatus")+'"></td><td><input type="button" onClick="return updateRow('+t+')" value="Update" /></tr>',e=$(r).attr("id")}),$("#orderDetails").html(addNewRow(a,++e))}function addNewRow(t,a){return t+'<tr><td><input type="text" size="1" id="id'+a+'" value="'+a+'"></td><td><input id="productName'+a+'" type="text"></td><td><input id="productdesc'+a+'" type="text"></td><td><input type="text" id="minVal'+a+'" size="2" ></td><td><input id="maxVal'+a+'" type="text" size="2" ></td><td><input type="text" size="2" id="stockStatus'+a+'" ></td><td><input type="button" onClick="return updateRow('+a+')" value="Add New Record" /></tr></table>'}function updateRow(t){var a={};if(a.category=category,a.password=$("#password").val(),a.minVal=$("#minVal"+t).val(),a.maxVal=$("#maxVal"+t).val(),a.productName=$("#productName"+t).val(),a.productDesc=$("#productdesc"+t).val()," "!=$("#maxVal"+t).val()){var e=parseInt($("#maxVal"+t).val())-parseInt($("#minVal"+t).val());e=0==(e=e/parseInt($("#maxVal"+t).val())*100)?" ":Math.trunc(e)+"%"}else e=" ";return a.discount=e,a.id=$("#id"+t).val(),a.stockStatus=$("#stockStatus"+t).val(),updateTables(JSON.stringify(a),"updateProductMaster","initMasterRates"),!1}function generateDetails(t){$("#orderDetails").html("");var a="",e="",r=1,s="";$(t).each(function(t,i){var o="";"Delivered"!=$($(i).attr("master")).attr("orderStatus")&&(o='<select id="statusddval'+r+'"><option value="In-Progress">In-Progress</option><option value="Delivered">Delivered</option><option value="UnReachable">UnReachable</option><option value="Out of Stock">Out of Stock</option></select>&nbsp;&nbsp;<input type="button" data-id="'+$($(i).attr("master")).attr("id")+'"  data-emailid="'+$($(i).attr("user")).attr("emailid")+'" data-name="'+$($(i).attr("user")).attr("userName")+'" class="btn btn-primary" onclick="return updatestatus(this,'+r+')" value="update" />'),e!=$($(i).attr("user")).attr("datetime").substr(0,10)?(a=a.replace("#runtime#",s),s=(s="")+"<p>"+r+'. <input type="button" data-id='+$($(i).attr("master")).attr("id")+' onClick="return viewOrderDetails(this)" value="OrderDetails" /> OrderId <b>'+$($(i).attr("master")).attr("orderid")+"</b> placed by <b>"+$($(i).attr("user")).attr("userName")+"</b> using Mobile No. <b>"+$($(i).attr("user")).attr("mobileNo")+"</b> with Total amount <b>"+$($(i).attr("master")).attr("finalPrice")+" Rs. Address Details :</b> "+$($(i).attr("user")).attr("address")+". having order status <b>"+$($(i).attr("master")).attr("orderStatus")+"</b>."+o,a=a+'<div class="col-sm-12"><div class="cart-wrap ftco-animate fadeInUp ftco-animated"><div class="cart-total mb-3"><h3>'+$($(i).attr("user")).attr("datetime").substr(0,10)+'</h3><div id="detailssub">#runtime#</div></div></div></div>',e=$($(i).attr("user")).attr("datetime").substr(0,10)):s=s+"<p>"+r+'. <input type="button" data-id='+$($(i).attr("master")).attr("id")+' onClick="return viewOrderDetails(this)" value="OrderDetails" /> OrderId <b>'+$($(i).attr("master")).attr("orderid")+"</b> placed by <b>"+$($(i).attr("user")).attr("userName")+"</b> using Mobile No. <b>"+$($(i).attr("user")).attr("mobileNo")+"</b> with Total amount <b>"+$($(i).attr("master")).attr("finalPrice")+" Rs. Address Details :</b> "+$($(i).attr("user")).attr("address")+". having order status <b>"+$($(i).attr("master")).attr("orderStatus")+"</b>."+o,r++}),a=a.replace("#runtime#",s),$("#orderDetails").append(a)}function viewOrderDetails(t){var a='{"category":"'+category+'","id":"'+$(t).attr("data-id")+'"}';$.ajax({type:"POST",url:"https://m8gohcb5gc.execute-api.ap-south-1.amazonaws.com/dev/common/getOrderDetailsData",data:a,success:function(t){generateTabularFormat(t)},error:function(t){alert(t)}})}function generateTabularFormat(t){var a="<ol>";$(t).each(function(t,e){a=a+"<li>"+e+"</li>"}),a+="</ol>",$("#exampleModalLabel").html("Below are Order Details"),$(".modal-body").html(a),$("#lodaingModal").modal("show")}function updatestatus(t,a){var e={};e.category=category,e.password=$("#password").val(),e.masterid=$(t).attr("data-id"),e.status=$("#statusddval"+a).val(),e.name=$(t).attr("data-name"),e.emailid=$(t).attr("data-emailid"),updateTables(JSON.stringify(e),"updateOrderStatus","initOrderDetails")}function updateTables(data,method,call){$.ajax({type:"POST",url:contextCommon+method,data:data,success:function(response){alert(response),eval(call+"()")},error:function(t){alert(t)}})}function submitViewOrder(){$("#ordersection").hide(),$.ajax({type:"POST",url:contextCommon+"findOrder",data:'{"orderid":"'+$("#Orderid").val()+'"}',success:function(t){var a="";$("#orderHeader").html("Thanks "+$($(t).attr("user")).attr("userName")+" for placing order with UlweAllInOne online Store."),a=(a=(a=(a=a+"<p> Your order was placed on "+$($(t).attr("master")).attr("datetime")+". Order status is "+$($(t).attr("master")).attr("orderStatus")+". </p>")+"<p> Delivery person will contact you on mobile no "+$($(t).attr("user")).attr("mobileNo")+", or email id "+$($(t).attr("user")).attr("emailid")+". </p>")+"<p> Delivery address is "+$($(t).attr("user")).attr("address")+". </p>")+'<p><input type="button" value="Your Order Details" class="btn btn-primary"  data-id='+$($(t).attr("master")).attr("id")+' onClick="return viewOrderDetails(this)" /> </p>',$("#detailssub").html(a),$("#ordersection").show(),category=$($(t).attr("master")).attr("catagory")},error:function(t){alert("Please enter valid Order ID. Order ID is send to you via email and SMS.")}})}
+var myCurrentReq = document.getElementById("myscriptLib").getAttribute("myCustomAttrib");
+var map = {};
+var deliveryCharge=0;
+var disc=0;
+var context = "https://m8gohcb5gc.execute-api.ap-south-1.amazonaws.com/dev/"+myCurrentReq+"/";
+var contextCommon = "https://m8gohcb5gc.execute-api.ap-south-1.amazonaws.com/dev/common/";
+var category=myCurrentReq.charAt(0).toUpperCase();
+var typeName = category + myCurrentReq.substr(1);
+var fetchMethod="getAll"+typeName+"Products";
+var successUrl=typeName+"index.html";
+var saveMethod="save"+typeName+"Orders";
+var masterMethod="get"+typeName+"MasterData";
+
+cardCount();
+function initMap(type){
+	$('#lodaingModal').modal('show');
+	$.ajax({
+			  type: 'POST',
+			  url: context + fetchMethod,
+			  success: function (response) { 
+				
+					$(response).each(function(){
+							map[$(this).attr('id')]=$(this).attr('productName')+","+$(this).attr('maxPrice')+","+$(this).attr('minPrice')+","+$(this).attr('discount')+","+$(this).attr('productDesc')+","+$(this).attr('stockStatus');
+							
+					})
+						if(type == 'H'){
+							generateProduct();
+							
+						}
+						localStorage.setItem(myCurrentReq+"mymap",JSON.stringify(map))	;
+						setTimeout(hidePopup, 500);
+					},
+			  error : function (response) { 						
+					setTimeout(hidePopup, 500);
+					alert(response);
+					}
+
+			});
+			
+		
+}
+
+
+function hidePopup(){
+	$('#lodaingModal').modal('hide');
+}
+
+
+function cardCount(){
+	var count= 0;
+	var iteams  = localStorage.getItem(myCurrentReq+"card");
+	if(iteams != null){
+		$.each(iteams.split(','),function(i,j){
+			if(j != "null" && j != "" && j.split("#")[0] != ""){
+				count++;
+			}
+		});
+	}
+	$(".cardCount").html("["+count+"]");
+}
+
+function addtoCard(id,obj){
+	var cardId = id +"#"+ $(obj).parent().parent().find('input').eq(0).val()
+	localStorage.setItem(myCurrentReq+"card",localStorage.getItem(myCurrentReq+"card")+","+cardId);
+	alert(map[id].split(",")[0]+ " successfully added to cart.");
+	cardCount();
+	return false;
+}
+
+function calcuateAmt(obj,j,orgValue,id){
+	if($(obj).val() > 0 && $(obj).val() < 10){
+		var value= $(obj).val() * orgValue;
+		$("#totVal"+j).html(value + " Rs").attr('data-val',id+','+$(obj).val());
+	}
+	mainTotal();
+	return false;
+}
+var finalOrderDetails="";
+var sum = 0;
+function mainTotal(){
+	sum = 0;
+	$.each($(".total"),function(i,j){
+		var value = $(j).html().split(" ");
+		sum = sum + parseInt(value[0]);
+	});
+	$("#finalTotal").html(sum + " Rs");
+	if(sum <= 50){
+		deliveryCharge=20;
+	}else if(sum <= 100 && sum > 50){
+		deliveryCharge=10;
+	}else if(sum <= 200 && sum > 101){
+		deliveryCharge=5;
+	}else if(sum > 200){
+		deliveryCharge=0;
+	}
+	if(category == 'A' || category == 'V'){
+		disc=0;
+		deliveryCharge=0;
+	}
+
+	$("#deliveryCharge").html(deliveryCharge + " Rs");
+	$("#disc").html(disc + " Rs");
+	var finalTot = parseInt(sum) + parseInt(deliveryCharge) + parseInt(disc);
+	$("#mainTotal").html(finalTot + " Rs");
+	finalOrderDetails = sum+","+finalTot;
+}
+
+function removeProduct(j,i){
+	disc = 0
+	var iteams  = localStorage.getItem(myCurrentReq+"card");
+	iteams = iteams.replace(j,"");
+	localStorage.setItem(myCurrentReq+"card",iteams);
+	$("#sectiondetails"+i).remove();
+	mainTotal();
+	cardCount();
+	return false;
+}
+function initCart(){
+	map = JSON.parse(localStorage.getItem(myCurrentReq+"mymap"));
+	displayCardDetails();
+}
+
+function displayCardDetails(){
+
+	var style="";
+	if(category == 'A'){
+		style="display:none";
+	}
+	var iteams  = localStorage.getItem(myCurrentReq+"card");
+	$.each(iteams.split(','),function(i,p){
+	if(p != "null" && p != ""){
+		var k=p.split("#")[1];
+		if(k == undefined){
+			k=1;
+		}
+		var j=p.split("#")[0];
+		if(j != ""){
+		var value = map[j].split(',');
+		var finalPrice = value[2] * k;
+		var clickFn = "return removeProduct('"+p+"',"+i+")";
+		var str = '<div class="col-md-6 col-lg-3 ftco-animate fadeInUp ftco-animated" id="sectiondetails'+i+'"><div class="product"><a href="#" style="text-align: center" class="img-prod"><img class="img-fluid" src="images/product-'+j+'.jpg" alt="Colorlib Template"><div class="overlay"></div></a><div class="text py-3 pb-4 px-3 text-center"><h3><a href="#">'+value[0]+'</a></h3><div class="pricing123"><p class="price"><span class="price-sale" style="'+style+'" >Price - '+value[2]+' Rs</span><br><span style="'+style+'" class="price-sale">&nbsp;&nbsp;Quantity - '+k+'</span><br><span class="price-sale" style="'+style+'">&nbsp;&nbsp;Final Price - '+finalPrice+' Rs</span><br><span class="price-sale">&nbsp;&nbsp;<input type="button" value="Remove from cart" onclick="'+clickFn +'" class="btn btn-primary"  ></span><span class="total" style="display:none" data-val="'+j+','+k+'" id="totVal'+i+'">'+finalPrice+' Rs</span></p></div></div></div></div>';
+		$("#cardDetailsData").append(str);
+		}
+	}
+	});
+	mainTotal();
+}
+
+function checkQty(obj){
+	if($(obj).val() != ""){
+	if(! ($(obj).val() > 0 && $(obj).val() < 10)){
+		$(obj).val('1')
+	}
+	}
+}
+
+function generateProduct(){
+	
+	var style="";
+	if(category == 'A'){
+		style="display:none";
+	}
+	$.map(map, function(value,key){
+	
+	var valuesDetails = value.split(",");
+	if(valuesDetails[5] != 'D'){
+	var disc = '';
+	if(valuesDetails[3] != "" && valuesDetails[3] != " "){
+		disc='<span class="status">'+valuesDetails[3] +'</span>'
+	}
+	var outOfStock
+	if(valuesDetails[5] == "Y" ){
+		outOfStock='<br><span style="'+style+'"> Quantity <input type="number" value="1" min="1" max="9" onKeyup="return checkQty(this)" size="4" style="margin-bottom: 6px;text-align: center;"></span><input type="button" onClick="return addtoCard('+key+',this)" class="btn btn-primary" value="Add to Cart">';
+	}else{
+		outOfStock='<span style="'+style+'" class="btn btn-danger">Out of Stock</span>';
+	}
+	var discStr = "";
+	if(valuesDetails[2] == valuesDetails[1]){
+		discStr='<span class="price-sale" style="'+style+'">'+valuesDetails[2]+' Rs</span>';
+	}else{
+		discStr='<span class="mr-2 price-dc" style="'+style+'">'+valuesDetails[1]+' Rs</span><span class="price-sale">'+valuesDetails[2]+' Rs</span>';
+	}
+	
+	var ourProducts = '<div class="col-md-6 col-lg-3 ftco-animate fadeInUp ftco-animated productNameClass" data-id="'+valuesDetails[0]+'" ><div class="product"><a href="#" class="img-prod" style="text-align: center"><img class="img-fluid" src="images/product-'+key+'.jpg" alt="UlweAllinOne">'+disc +'<div class="overlay"></div></a><div class="text py-3 pb-4 px-3 text-center"><h3><a href="#">'+valuesDetails[0]+'</a></h3><div class=""><div class="pricing123"><p class="price" >'+discStr+'<span class="price-sale" >&nbsp;&nbsp;</span>'+outOfStock+'</p></div></div></div></div></div>';
+	$("#productDetails").append(ourProducts);
+	}
+	});
+}
+
+function displaySearchResult(obj){
+	
+	if($(obj).val() != ""){
+		$(".productNameClass").each(function(){
+			if($(this).attr('data-id').toLowerCase().indexOf($(obj).val().toLowerCase()) == -1){
+				$(this).hide();
+			}
+		})
+	}else{
+		$(".productNameClass").show();
+	}
+}
+
+
+function closePopup(){
+	$('#lodaingModal').modal('hide');
+	localStorage.removeItem(myCurrentReq+"mymap");
+	localStorage.removeItem(myCurrentReq+"card");
+	location.href=successUrl;
+
+}
+
+function applyCoupon(){
+	mainTotal();
+	if($("#coupontxt").val() == "NODELVCHG" && sum < 200 ){
+		disc = "-" + deliveryCharge;
+		mainTotal();
+		alert("Coupon applyed successfully.")
+	}else if($("#coupontxt").val() == "ULWEOFF10" && sum > 200){
+		disc = "-10";
+		mainTotal();
+		alert("Coupon applyed successfully.")
+	}else{
+		alert("Sorry No Coupon is availabel with this code.")
+	}
+	return false;
+}
+
+function placeOrder(){
+	var iteams  = finalOrderDetails;
+	
+	if ((iteams.split(',')[1] > 1) || (iteams.split(',')[1] < 200)){
+		alert('Order Amount Should be above 200 Rs.');
+		   $("#fname").focus()
+		   return false;
+	}
+
+	if($("#fname").val() == '' ){
+		   alert('Please enter your Name.');
+		   $("#fname").focus()
+		   return false;
+	   	}
+	 	if($("#streetAddress").val() == '' ){
+		   alert('Please enter Address.');
+		 $("#streetAddress").focus()
+		   return false;
+	   	}
+		 if($("#mobileNo").val() == '' ){
+		   alert('Please enter Mobile Number.');
+		 $("#mobileNo").focus()
+		   return false;
+	   	}
+		 if($("#mobileNo").val().length != 10 ){
+			   alert('Please enter 10 digit Mobile Number.');
+			 $("#mobileNo").focus()
+			   return false;
+		   	}
+		 if($("#emailid").val() == '' ){
+		   alert('Please enter emailid.');
+		   $("#emailid").focus()
+		   return false;
+	   }
+		 
+	var r = confirm("Are you sure you want to place order?");
+		if (r == true) {
+
+	$('#lodaingModal').modal('show');
+	$("#closeButton").hide();
+	
+	$("#finalTotal").html(iteams.split(',')[0]);
+	$("#deliveryCharge").html(deliveryCharge);
+	$("#disc").html(disc);
+	$("#mainTotal").html(iteams.split(',')[1]);
+	var array = {};
+	array["userName"]=$("#fname").val() + " "+$("#lname").val();
+	array["address"]=$("#sector").val()+ ", "+$("#apartment").val()+ ", "+$("#streetAddress").val()+", "+$("#city").val()+ ", "+$("#pincode").val();
+	array["emailid"]=$("#emailid").val();
+	array["mobileNo"]=$("#mobileNo").val();
+	array["devCharge"]=deliveryCharge;
+	array["discount"]=disc;
+	array["totPrice"]=iteams.split(',')[0];
+	array["finalPrice"]=iteams.split(',')[1];
+	
+	var details="";
+	$(".total").each(function(){
+		details = details + $(this).attr("data-val") +"#";
+	})
+	details = details.substr(0,details.length -1);
+
+	
+	array["orderDetails"]=details;
+	$.ajax({
+			  type: 'POST',
+			  url: context + saveMethod,
+			  data:JSON.stringify(array),
+			  success: function (response) { 
+					$("#orderConfirmationContent").html(response);
+					$("#closeButton").show();
+					},
+			  error : function (response) { 						
+					$('#lodaingModal').modal('hide');
+					$("#closeButton").show();
+					alert(response);
+					}
+
+			});
+		}
+}
+
+function initMasterRates(){
+
+	$('#lodaingModal').modal('show');
+			var data = '{"category":"'+category+'","password":"'+$("#password").val()+'"}';
+			$.ajax({
+			  type: 'POST',
+			  url: context + masterMethod,
+			  data : data,
+			  success: function (response) { 
+					setTimeout(hidePopup, 500);
+					generateMaster(response);
+					},
+			  error : function (response) { 
+					setTimeout(hidePopup, 500);				
+					alert(response.responseJSON);
+					
+					}
+
+			});
+
+
+}
+
+function initOrderDetails(){
+			$('#lodaingModal').modal('show');
+			var data = '{"category":"'+category+'","password":"'+$("#password").val()+'"}';
+			$.ajax({
+			  type: 'POST',
+			  url: contextCommon + "getOrderHistory",
+			  data : data,
+			  success: function (response) { 
+					setTimeout(hidePopup, 500);
+					generateDetails(response);
+					},
+			  error : function (response) { 
+					setTimeout(hidePopup, 500);				
+					alert(response.responseJSON);
+					
+					}
+
+			});
+
+
+
+}
+
+function generateMaster(response1){
+	var str="";
+	str="<table><tr><th>ID</th><th>Product Name</th><th>Product Description</th><th>Min Price</th><th>Max Price</th><th>Status</th><th>Update</th></tr>";
+	var nextid = 1;
+	$(response1).each(function(i,response){
+		str = str + '<tr><td><input type="text" size="1" id="id'+i+'" readonly value="'+$(response).attr('id')+'"></td><td><input id="productName'+i+'" type="text" value="'+$(response).attr('productName')+'"></td><td><input id="productdesc'+i+'" type="text" value="'+$(response).attr('productDesc')+'"></td><td><input type="text" id="minVal'+i+'" size="2" value="'+$(response).attr('minPrice')+'"></td><td><input id="maxVal'+i+'" type="text" size="2" value="'+$(response).attr('maxPrice')+'"></td><td><input type="text" size="2" id="stockStatus'+i+'" value="'+$(response).attr('stockStatus')+'"></td><td><input type="button" onClick="return updateRow('+i+')" value="Update" /></tr>';
+		nextid = $(response).attr('id');
+	});
+	$("#orderDetails").html(addNewRow(str,++nextid));
+
+}
+
+function addNewRow(str,i){
+	return str + '<tr><td><input type="text" size="1" id="id'+i+'" value="'+i+'"></td><td><input id="productName'+i+'" type="text"></td><td><input id="productdesc'+i+'" type="text"></td><td><input type="text" id="minVal'+i+'" size="2" ></td><td><input id="maxVal'+i+'" type="text" size="2" ></td><td><input type="text" size="2" id="stockStatus'+i+'" ></td><td><input type="button" onClick="return updateRow('+i+')" value="Add New Record" /></tr></table>';
+}
+
+
+function updateRow(i){
+	var map={};
+	map["category"]=category;
+	map["password"]=$("#password").val();
+	map["minVal"]=$("#minVal"+i).val();
+	map["maxVal"]=$("#maxVal"+i).val();
+	map["productName"]=$("#productName"+i).val();
+	map["productDesc"]=$("#productdesc"+i).val();
+	if($("#maxVal"+i).val() != " "){
+	var disCal = parseInt($("#maxVal"+i).val()) - parseInt($("#minVal"+i).val());
+	disCal = (disCal/parseInt($("#maxVal"+i).val())) * 100;
+	if(disCal == 0){
+		disCal = " ";
+	}else{
+		disCal = Math.trunc(disCal)+"%"
+	}
+	}else{
+		disCal=" ";
+	}
+	map["discount"]=disCal;
+	map["id"]=$("#id"+i).val();
+	map["stockStatus"]=$("#stockStatus"+i).val();
+	updateTables(JSON.stringify(map),"updateProductMaster","initMasterRates");
+	return false;
+}
+
+function generateDetails(response1){
+	$("#orderDetails").html("");
+	var str ="";
+	var lastDate = "";
+	var count =1;
+	var detailsmsg = "";
+	$(response1).each(function(i,response){
+		var selectdd ="";
+		if($($(response).attr('master')).attr('orderStatus') != 'Delivered'){
+		selectdd = '<select id="statusddval'+count+'"><option value="In-Progress">In-Progress</option><option value="Delivered">Delivered</option><option value="UnReachable">UnReachable</option><option value="Out of Stock">Out of Stock</option></select>&nbsp;&nbsp;<input type="button" data-id="'+$($(response).attr('master')).attr('id')+'"  data-emailid="'+$($(response).attr('user')).attr('emailid')+'" data-name="'+$($(response).attr('user')).attr('userName')+'" class="btn btn-primary" onclick="return updatestatus(this,'+count+')" value="update" />';
+		}
+		//selectdd = selectdd + "
+		if(lastDate != $($(response).attr('user')).attr('datetime').substr(0,10)){
+			str = str.replace("#runtime#",detailsmsg);
+			detailsmsg = "";
+			detailsmsg = detailsmsg + '<p>'+count +'. <input type="button" data-id='+$($(response).attr('master')).attr('id')+' onClick="return viewOrderDetails(this)" value="OrderDetails" /> OrderId <b>'+$($(response).attr('master')).attr('orderid')+'</b> placed by <b>'+$($(response).attr('user')).attr('userName')+'</b> using Mobile No. <b>'+$($(response).attr('user')).attr('mobileNo')+'</b> with Total amount <b>'+ $($(response).attr('master')).attr('finalPrice')+' Rs. Address Details :</b> '+ $($(response).attr('user')).attr('address')+'. having order status <b>'+$($(response).attr('master')).attr('orderStatus')+'</b>.'+selectdd;
+			str = str +  '<div class="col-sm-12"><div class="cart-wrap ftco-animate fadeInUp ftco-animated"><div class="cart-total mb-3"><h3>'+$($(response).attr('user')).attr('datetime').substr(0,10)+'</h3><div id="detailssub">#runtime#</div></div></div></div>';
+			
+			lastDate = $($(response).attr('user')).attr('datetime').substr(0,10);
+			
+		}else{
+			detailsmsg = detailsmsg + '<p>'+count +'. <input type="button" data-id='+$($(response).attr('master')).attr('id')+' onClick="return viewOrderDetails(this)" value="OrderDetails" /> OrderId <b>'+$($(response).attr('master')).attr('orderid')+'</b> placed by <b>'+$($(response).attr('user')).attr('userName')+'</b> using Mobile No. <b>'+$($(response).attr('user')).attr('mobileNo')+'</b> with Total amount <b>'+ $($(response).attr('master')).attr('finalPrice')+' Rs. Address Details :</b> '+ $($(response).attr('user')).attr('address')+'. having order status <b>'+$($(response).attr('master')).attr('orderStatus')+'</b>.'+selectdd;
+				
+		}
+	
+	count++;
+	});
+	str = str.replace("#runtime#",detailsmsg);
+	
+	$("#orderDetails").append(str);
+}
+
+function viewOrderDetails(obj){
+	var data = '{"category":"'+category+'","id":"'+$(obj).attr('data-id')+'"}';
+	$.ajax({
+		type: 'POST',
+		url: "https://m8gohcb5gc.execute-api.ap-south-1.amazonaws.com/dev/common/getOrderDetailsData",
+		data : data,
+		success: function (response) { 
+				generateTabularFormat(response);
+			},
+		error : function (response) { 						
+			alert(response);
+			}
+
+		});
+}
+
+function generateTabularFormat(response1){
+	var details = "<ol>";
+	$(response1).each(function(i,response){
+		details = details +"<li>"+response+"</li>";
+	});
+	details = details + "</ol>";
+	$("#exampleModalLabel").html("Below are Order Details");
+	$(".modal-body").html(details);
+	$('#lodaingModal').modal('show');
+}
+
+function updatestatus(obj,count){
+	var data={};
+	data["category"]=category;
+	data["password"]=$("#password").val();
+	data["masterid"]=$(obj).attr('data-id');
+	data["status"]=$("#statusddval"+count).val();
+	data["name"]=$(obj).attr('data-name');
+	data["emailid"]=$(obj).attr('data-emailid');
+	updateTables(JSON.stringify(data),"updateOrderStatus","initOrderDetails");
+}	
+
+function updateTables(data,method,call){
+	$.ajax({
+			  type: 'POST',
+			  url: contextCommon + method,
+			  data : data,
+			  success: function (response) { 
+						alert(response);
+						eval(call+"()");
+						
+					},
+			  error : function (response) { 
+						alert(response);
+					}
+
+			});
+
+}	
+function submitViewOrder(){
+$("#ordersection").hide();
+			
+			 $.ajax({
+			  type: 'POST',
+			  url: contextCommon + "findOrder",
+			  data : '{"orderid":"'+$("#Orderid").val()+'"}',
+			  success: function (response) { 
+					var str = "";
+						$("#orderHeader").html('Thanks '+ $($(response).attr('user')).attr('userName') + ' for placing order with UlweAllInOne online Store.')
+						str = str + '<p> Your order was placed on '+$($(response).attr('master')).attr('datetime')+'. Order status is '+$($(response).attr('master')).attr('orderStatus')+'. </p>';
+						str = str + '<p> Delivery person will contact you on mobile no '+$($(response).attr('user')).attr('mobileNo')+', or email id '+$($(response).attr('user')).attr('emailid')+'. </p>';
+						str = str + '<p> Delivery address is '+$($(response).attr('user')).attr('address')+'. </p>';
+						str = str + '<p><input type="button" value="Your Order Details" class="btn btn-primary"  data-id='+$($(response).attr('master')).attr('id')+' onClick="return viewOrderDetails(this)" /> </p>';
+				$("#detailssub").html(str);
+				$("#ordersection").show();
+				category = $($(response).attr('master')).attr('catagory');
+				},
+			  error : function (response) { 						
+					
+					alert("Please enter valid Order ID. Order ID is send to you via email and SMS.");
+					}
+
+			});
+			
+	}	
